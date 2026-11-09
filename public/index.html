@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TYLA 💋 | Official Pairing</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif}
+  body{background:#050505;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;overflow-x:hidden;position:relative}
+  body::before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 50% 0%,rgba(255,45,120,.35),transparent 60%),radial-gradient(circle at 80% 90%,rgba(255,0,255,.15),transparent 50%);pointer-events:none}
+  .card{position:relative;width:100%;max-width:440px;background:rgba(20,20,22,.9);backdrop-filter:blur(20px);border:1px solid rgba(255,45,120,.4);border-radius:28px;padding:32px 26px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05) inset}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:#ff2d78;color:#fff;font-size:11px;font-weight:800;letter-spacing:1.5px;padding:6px 12px;border-radius:100px;margin-bottom:16px}
+  .badge i{width:7px;height:7px;background:#00ff88;border-radius:50%;display:inline-block;animation:blink 1.2s infinite}
+  @keyframes blink{50%{opacity:.2}}
+  .logo{font-size:64px;line-height:1;filter:drop-shadow(0 0 20px rgba(255,45,120,.7))}
+  h1{font-size:42px;font-weight:900;letter-spacing:6px;margin:6px 0 2px}
+  h1 span{color:#ff2d78}
+  .tag{color:#a1a1aa;font-size:13px;margin-bottom:18px}
+  .status-box{display:flex;justify-content:space-between;align-items:center;background:#1a1a1c;border:1px solid #2a2a2e;border-radius:14px;padding:12px 14px;font-size:13px;margin-bottom:16px}
+  .status-box b{color:#00ff88}
+  .code-wrap{background:linear-gradient(180deg,#1a1a1c,#0a0a0a);border:2px dashed #ff2d78;border-radius:18px;padding:18px 10px 16px;margin-bottom:14px;position:relative}
+  .code-label{font-size:10px;letter-spacing:3px;color:#888;margin-bottom:8px}
+  #code{font-size:40px;font-weight:900;letter-spacing:10px;color:#fff;text-shadow:0 0 20px rgba(255,45,120,.6)}
+  #timer{font-size:11px;color:#888;margin-top:8px}
+  .btn{width:100%;padding:15px;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;transition:.2s}
+  .btn:active{transform:scale(.97)}
+  .btn-pink{background:#ff2d78;color:#fff;box-shadow:0 10px 25px rgba(255,45,120,.35)}
+  .btn-dark{background:#222;color:#fff;border:1px solid #333;margin-top:10px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  .stat{background:#1a1a1c;border:1px solid #2a2a2e;border-radius:14px;padding:12px 8px}
+  .stat b{display:block;font-size:18px}
+  .stat span{font-size:11px;color:#888}
+  .steps{text-align:left;background:#141416;border:1px solid #26262a;border-radius:16px;padding:16px;margin-top:16px;font-size:13px;line-height:1.9;color:#d4d4d8}
+  .steps b{color:#fff}
+  .steps .n{display:inline-flex;width:22px;height:22px;background:#ff2d78;color:#fff;border-radius:50%;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-right:6px}
+  .footer{margin-top:18px;font-size:11px;color:#52525b}
+  .footer b{color:#ff2d78}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:#fff;color:#000;padding:12px 20px;border-radius:100px;font-weight:700;font-size:13px;transition:.3s;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge"><i></i> TYLA ONLINE • V2.0</div>
+  <div class="logo">💋</div>
+  <h1>TY<span>LA</span></h1>
+  <p class="tag">The Baddest Moderator Bot • Private & Public Mode</p>
+
+  <div class="status-box"><span>Bot Status</span><b id="status">● Connecting...</b></div>
+
+  <div class="code-wrap">
+    <div class="code-label">YOUR PAIRING CODE</div>
+    <div id="code">--------</div>
+    <div id="timer">Auto-refresh every 10s</div>
+  </div>
+
+  <button class="btn btn-pink" onclick="copyCode()">📋 Copy Pairing Code</button>
+  <button class="btn btn-dark" onclick="getCode()">🔄 Refresh Code</button>
+
+  <div class="grid">
+    <div class="stat"><b>113+</b><span>Commands</span></div>
+    <div class="stat"><b>100%</b><span>Real Handler</span></div>
+    <div class="stat"><b>🔒</b><span>Private Mode</span></div>
+    <div class="stat"><b>👑</b><span>Admin Only</span></div>
+  </div>
+
+  <div class="steps">
+    <b style="font-size:14px">How to Link TYLA:</b><br><br>
+    <span class="n">1</span> Open <b>WhatsApp</b> on your phone<br>
+    <span class="n">2</span> Go to <b>Settings → Linked Devices</b><br>
+    <span class="n">3</span> Tap <b>Link a Device</b><br>
+    <span class="n">4</span> Tap <b>Link with phone number instead</b><br>
+    <span class="n">5</span> Enter code above<br><br>
+    📱 <b>Bot Number:</b> 2348167155800<br>
+    🔒 <b>Private:</b> Only owner fit use am<br>
+    🌍 <b>Public:</b> Only group admins fit use am
+  </div>
+
+  <div class="footer">Made with 💋 by <b>Simon Tech Empire</b> • TYLA © 2026</div>
+</div>
+
+<div class="toast" id="toast">Copied ✅</div>
+
+<script>
+  let lastCode = "";
+  async function getCode(){
+    try{
+      const r = await fetch('/pair');
+      const d = await r.json();
+      if(d.code){
+        document.getElementById('code').textContent = d.code;
+        document.getElementById('status').textContent = '● Ready ✅';
+        document.getElementById('status').style.color = '#00ff88';
+        lastCode = d.code;
+      } else {
+        document.getElementById('status').textContent = '● Starting... wait 10s';
+        document.getElementById('status').style.color = '#ffaa00';
+      }
+    }catch(e){
+      document.getElementById('status').textContent = '● Offline ❌';
+    }
+  }
+  function copyCode(){
+    if(!lastCode || lastCode === '--------') return showToast('Code never come yet, wait small');
+    navigator.clipboard.writeText(lastCode);
+    showToast('Copied: ' + lastCode + ' 💋');
+  }
+  function showToast(t){
+    const el = document.getElementById('toast');
+    el.textContent = t;
+    el.classList.add('show');
+    setTimeout(()=> el.classList.remove('show'), 2500);
+  }
+  getCode();
+  setInterval(getCode, 10000);
+</script>
+</body>
+    </html>
