@@ -1,13 +1,19 @@
 {
   "name": "tyla",
   "version": "1.0.0",
+  "description": "TYLA - Moderator Bot",
   "main": "index.js",
-  "scripts": { "start": "node index.js" },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": "20.x"
+  },
   "dependencies": {
     "@whiskeysockets/baileys": "latest",
-    "pino": "latest",
+    "axios": "latest",
     "dotenv": "latest",
     "express": "latest",
-    "axios": "latest"
+    "pino": "latest"
   }
 }
