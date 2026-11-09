@@ -13,10 +13,11 @@ app.get('/pair', async (req, res) => {
   if (!global.pairCode) return res.json({ error: 'TYLA still starting... wait 10s then refresh' })
   res.json({ code: global.pairCode })
 })
-app.listen(3000, () => console.log('TYLA Web: http://localhost:3000'))
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => console.log('TYLA Web on port ' + PORT))
 
-let db = { groups: {}, warns: {}, blacklist: [], whitelist: [], badwords: ['fuck','shit','bitch'] }
-if (fs.existsSync('./database.json')) db = JSON.parse(fs.readFileSync('./database.json'))
+let db = { groups: {}, warns: {}, blacklist: [], whitelist: [], badwords: ['fuck','shit','bitch'], mode: 'public' }
+if (fs.existsSync('./database.json')) { const d = JSON.parse(fs.readFileSync('./database.json')); db = { ...db, ...d, groups: d.groups || {}, warns: d.warns || {}, blacklist: d.blacklist || [], whitelist: d.whitelist || [], badwords: d.badwords || ['fuck','shit','bitch'], mode: d.mode || 'public' } }
 const saveDB = () => fs.writeFileSync('./database.json', JSON.stringify(db, null, 2))
 const g = (id) => { if (!db.groups[id]) db.groups[id] = { antilink:false, antibot:false, antispam:false, antifake:false, antiviewonce:false, antisticker:false, antiforeign:false, antidelete:false, antitag:false, antidemote:false, antipromote:false, anticall:false, antimedia:false, antilocation:false, anticontact:false, antipoll:false, antishare:false, antivideo:false, antiaudio:false, antidocument:false, antigcstatus:false, antigmention:false, antichannel:false, antistatusmention:false, antilinkstatus:false, antibadword:false, warnlimit:3, welcome:'', goodbye:'', rules:'', antilinkaction:'delete', adminonly:false }; return db.groups[id] }
 const getWarn = (gid, uid) => db.warns[`${gid}_${uid}`] || 0
@@ -41,7 +42,7 @@ async function startTYLA() {
   sock.ev.on('connection.update', async ({ connection, lastDisconnect }) => {
     if (connection === 'close' && lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut) startTYLA()
     if (connection === 'open') {
-      console.log('TYLA CONNECTED 💋')
+      console.log('TYLA CONNECTED 💋 MODE:', db.mode.toUpperCase())
       try { const buf = await getPfpBuffer(); await sock.updateProfilePicture(sock.user.id, buf) } catch {}
     }
   })
@@ -61,6 +62,7 @@ async function startTYLA() {
     const quoted = ctx.participant || null
     const reply = (text) => newsletterReply(sock, from, text, msg)
     const del = async () => { try { await sock.sendMessage(from, { delete: msg.key }) } catch {} }
+    const isOwner = config.ownerNumber.includes(senderNum)
 
     let isAdmin = false, isBotAdmin = false, meta = null
     if (isGroup) {
@@ -68,7 +70,33 @@ async function startTYLA() {
         meta = await sock.groupMetadata(from)
         isAdmin = meta.participants.find(p => p.id === sender)?.admin != null
         isBotAdmin = meta.participants.find(p => p.id.includes(botNum))?.admin != null
-        if (!msg.key.fromMe && !isAdmin) {
+      } catch {}
+    }
+
+    // ===== MODE GATE - PRIVATE / PUBLIC =====
+    // PRIVATE: only owner fit use bot at all
+    // PUBLIC: only group admin fit use bot (moderator bot)
+    const isCmd = body.startsWith(config.prefix)
+    if (isCmd) {
+      const tmpArgs = body.slice(config.prefix.length).trim().split(/ +/)
+      const tmpCmd = tmpArgs[0]?.toLowerCase()
+      // Owner fit always change mode even for private
+      const isModeCmd = ['private','public','mode'].includes(tmpCmd)
+      if (db.mode === 'private' && !isOwner) return
+      if (db.mode === 'public' && !isOwner) {
+        if (isGroup && !isAdmin) {
+          // For moderator cmds, ignore non-admins completely - no reply to avoid spam
+          // But allow .menu/.ping/.rules for admins only too - so return silently
+          if (!isModeCmd) return
+        }
+        if (!isGroup && !isOwner) return
+      }
+      if (isModeCmd && !isOwner) return
+    }
+
+    if (isGroup) {
+      try {
+        if (!msg.key.fromMe && !isAdmin && !isOwner) {
           const cfg = g(from)
           const txt = body.toLowerCase()
           const hasLink = /https?:\/\/|wa\.me\/|chat\.whatsapp\.com|t\.me\/|discord\.gg|instagram\.com|youtube\.com|tiktok\.com/i.test(body)
@@ -104,7 +132,6 @@ async function startTYLA() {
           if (cfg.antilocation && hasLocation) shouldDel = true
           if (cfg.antivideo && !!m.videoMessage) shouldDel = true
           if (cfg.antishare && ctx.isForwarded) shouldDel = true
-          if (cfg.antitag && mentioned.length > 0 && mentioned.length < 5) shouldDel = false
           if (shouldDel) {
             await del()
             if (cfg.antilinkaction === 'warn' && hasLink) {
@@ -125,12 +152,15 @@ async function startTYLA() {
     const text = args.join(' ')
     const target = mentioned[0] || (quoted ? quoted : null) || (args[0] ? args[0].replace(/[^0-9]/g, '') + '@s.whatsapp.net' : null)
     const targetNum = target ? target.split('@')[0] : ''
-    const isOwner = config.ownerNumber.includes(senderNum)
-    const needAdmin = async () => { if (!isGroup) { await reply('Group only'); return false } if (!isAdmin && !isOwner) { await reply('Admin only'); return false } if (!isBotAdmin) { await reply('Make TYLA admin first'); return false } return true }
+    const needAdmin = async () => { if (!isGroup) { await reply('Group only'); return false } if (!isAdmin && !isOwner) { await reply('Admin only - TYLA na moderator bot'); return false } if (!isBotAdmin) { await reply('Make TYLA admin first'); return false } return true }
     const needGroup = async () => { if (!isGroup) { await reply('Group only'); return false } return true }
+
     switch (command) {
+      case 'private': { if (!isOwner) break; db.mode = 'private'; saveDB(); await reply('TYLA MODE: PRIVATE 🔒\nOnly owner fit use bot now.\nNobody else go get reply.'); break }
+      case 'public': { if (!isOwner) break; db.mode = 'public'; saveDB(); await reply('TYLA MODE: PUBLIC 🌍\nOnly group admins fit use bot.\nNormal members go dey ignored - na moderator bot.'); break }
+      case 'mode': { if (!isOwner) break; await reply(`Current mode: ${db.mode.toUpperCase()}\n\n.private = Only owner\n.public = Only group admins`); break }
       case 'menu': case 'help': { await reply(menuText(config.prefix)); break }
-      case 'ping': { await reply(`TYLA online 💋`); break }
+      case 'ping': { await reply('TYLA online 💋'); break }
       case 'owner': { await reply(`Owner: @${config.ownerNumber[0]}`); break }
       case 'rules': { if (!await needGroup()) break; await reply(g(from).rules || 'No rules set'); break }
       case 'setrules': { if (!await needAdmin()) break; g(from).rules = text; saveDB(); await reply('Rules updated'); break }
@@ -180,7 +210,7 @@ async function startTYLA() {
       case 'groupunmute': { if (!await needAdmin()) break; await sock.groupSettingUpdate(from, 'not_announcement'); await reply('Group unmuted'); break }
       case 'tagall': { if (!await needAdmin()) break; await sock.sendMessage(from, { text: `${text || 'TYLA tag all'}\n\n${meta.participants.map(p => `@${p.id.split('@')[0]}`).join(' ')}`, mentions: meta.participants.map(p => p.id) }); break }
       case 'hidetag': { if (!await needAdmin()) break; await sock.sendMessage(from, { text: text || 'TYLA', mentions: meta.participants.map(p => p.id) }); break }
-      case 'tagadmins': { if (!await needGroup()) break; const admins = meta.participants.filter(p => p.admin); await sock.sendMessage(from, { text: `${text || 'Admins'} - ${admins.map(p => `@${p.id.split('@')[0]}`).join(' ')}`, mentions: admins.map(p => p.id) }); break }
+            case 'tagadmins': { if (!await needGroup()) break; const admins = meta.participants.filter(p => p.admin); await sock.sendMessage(from, { text: `${text || 'Admins'} - ${admins.map(p => `@${p.id.split('@')[0]}`).join(' ')}`, mentions: admins.map(p => p.id) }); break }
       case 'groupinfo': { if (!await needGroup()) break; await reply(`Name: ${meta.subject}\nMembers: ${meta.participants.length}\nAdmins: ${meta.participants.filter(p => p.admin).length}\nDesc: ${meta.desc || 'None'}`); break }
       case 'groupname': { if (!await needAdmin()) break; await sock.groupUpdateSubject(from, text); await reply('Group name changed'); break }
       case 'groupdesc': { if (!await needAdmin()) break; await sock.groupUpdateDescription(from, text); await reply('Group desc changed'); break }
@@ -188,7 +218,7 @@ async function startTYLA() {
       case 'delgrouppic': { if (!await needAdmin()) break; await sock.removeProfilePicture(from); await reply('Group pic removed'); break }
       case 'revoke': { if (!await needAdmin()) break; await sock.groupRevokeInvite(from); await reply('Invite link revoked'); break }
       case 'invite': case 'grouplink': { if (!await needAdmin()) break; const code = await sock.groupInviteCode(from); await reply(`https://chat.whatsapp.com/${code}`); break }
-      case 'groupsettings': { if (!await needGroup()) break; const cfg = g(from); await reply(`Antilink: ${cfg.antilink}\nAntigcstatus: ${cfg.antigcstatus}\nAntigmention: ${cfg.antigmention}\nWarnlimit: ${cfg.warnlimit}\nAdminOnly: ${cfg.adminonly}`); break }
+      case 'groupsettings': { if (!await needGroup()) break; const cfg = g(from); await reply(`Antilink: ${cfg.antilink}\nAntigcstatus: ${cfg.antigcstatus}\nAntigmention: ${cfg.antigmention}\nWarnlimit: ${cfg.warnlimit}\nAdminOnly: ${cfg.adminonly}\nMode: ${db.mode}`); break }
       case 'groupstats': { if (!await needGroup()) break; await reply(`Members: ${meta.participants.length}\nWarns: ${Object.entries(db.warns).filter(([k]) => k.startsWith(from)).reduce((a, [, v]) => a + v, 0)}`); break }
       case 'promote': { if (!await needAdmin()) break; if (!target) { await reply('Tag user'); break } await sock.groupParticipantsUpdate(from, [target], 'promote'); await reply(`@${targetNum} promoted`); break }
       case 'demote': { if (!await needAdmin()) break; if (!target) { await reply('Tag user'); break } await sock.groupParticipantsUpdate(from, [target], 'demote'); await reply(`@${targetNum} demoted`); break }
