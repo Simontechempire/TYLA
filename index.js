@@ -294,9 +294,11 @@ async function startBot() {
           await replyWithPfp(sock, jid, `🏓 Pong!\n${config.botName} is online.`, msg);
           break;
 
-        case 'owner':
-          await replyWithPfp(sock, jid, `👑 *Owners*\n\( {config.owners.map(o => `+ \){o}`).join('\n') || 'Not set'}`, msg);
+        case 'owner': {
+          const ownersList = config.owners.map(o => '+' + o).join('\n') || 'Not set';
+          await replyWithPfp(sock, jid, '👑 *Owners*\n' + ownersList, msg);
           break;
+        } 
 
         case 'bot':
         case 'info':
