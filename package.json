@@ -1,17 +1,25 @@
 {
   "name": "tyla-moderator-bot",
   "version": "1.0.0",
-  "description": "TYLA 💋 WhatsApp Moderator Bot",
+  "description": "TYLA 💋 WhatsApp Moderator Bot - Pairing session, no QR, newsletter style replies with bot PFP",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
+  "keywords": [
+    "whatsapp",
+    "baileys",
+    "moderator",
+    "bot",
+    "pairing"
+  ],
+  "author": "TYLA",
+  "license": "MIT",
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.18",
     "@hapi/boom": "^10.0.1",
     "dotenv": "^16.4.5",
     "pino": "^9.4.0",
-    "express": "^4.21.1"
     "qrcode-terminal": "^0.12.0",
     "axios": "^1.7.7",
     "fs-extra": "^11.2.0",
