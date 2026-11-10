@@ -911,25 +911,37 @@ app.post('/api/pair', async (req, res) => {
   }
 });
 
-app.get('/api/status', (req, res) => {
-  res.json({
-    connected: isConnected,
-    registered: !!(sock && sock.authState?.creds?.registered),
-    botName: config.botName
-  });
-});
+app.post('/api/pair', async (req, res) => {
+  try {
+    if (!sock) {
+      return res.status(503).json({ error: 'Bot still starting. Wait 10 seconds and try again.' });
+    }
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`
-╭━━━━━━━━━━━┳━━━━━━━━━━━╮
-┃  TYLA 💋   ┃  STARTING ┃
-╰━━━━━━━━━━━┻━━━━━━━━━━━╯
-Listening on port ${PORT}
-Web UI ready
-`);
-});
+    if (sock.authState?.creds?.registered) {
+      return res.status(400).json({
+        error: 'Already linked. Delete auth_info folder and redeploy to pair again.'
+      });
+    }
 
-startBot().catch(err => {
-  console.error('Fatal:', err);
-  process.exit(1);
+    let phone = (req.body.phone || '').toString().replace(/[^0-9]/g, '');
+    if (phone.length < 10 || phone.length > 15) {
+      return res.status(400).json({ error: 'Invalid number. Use country code + number, digits only.' });
+    }
+
+    const code = await sock.requestPairingCode(phone);
+
+    console.log('📱 NEW PAIRING CODE for +' + phone + ' → ' + code);
+
+    res.json({
+      success: true,
+      code: code,
+      phone: phone,
+      message: 'Enter this code RIGHT NOW on your phone'
+    });
+  } catch (err) {
+    console.error('Pair error:', err);
+    res.status(500).json({
+      error: err.message || 'Failed to get code. Delete auth_info and try again.'
+    });
+  }
 });
